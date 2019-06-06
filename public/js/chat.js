@@ -12,6 +12,6 @@ document.querySelector('#sendMessage').addEventListener('click',(e)=>{
 })
 
 //receive message from node server
-socket.on('broadcastMessage', (message)=>{
+socket.on('message', (message)=>{
     console.log(message)
 })

@@ -10,11 +10,16 @@ const $messages = document.querySelector('#messages')
 //Templates
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const geolocationTemplate = document.querySelector('#geolocation-template').innerHTML
+const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
+
+//Options
+const { username, room } = Qs.parse(location.search, {ignoreQueryPrefix: true})
 
 //receive message from node server
 socket.on('message', (message)=>{
     console.log(message)
     const html = Mustache.render(messageTemplate, {
+        username: message.username,
         message: message.text,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
@@ -25,10 +30,20 @@ socket.on('message', (message)=>{
 socket.on('locationMessage', (message)=>{
     console.log(message)
     const html = Mustache.render(geolocationTemplate,{
+        username: message.username,
         url: message.url,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
+})
+
+//receive all users in room
+socket.on('roomData', ({room, users})=>{
+    const html = Mustache.render(sidebarTemplate, {
+        room,
+        users
+    })
+    document.querySelector('#sidebar').innerHTML = html
 })
 
 $messageFormButton.addEventListener('click',(e)=>{
@@ -70,4 +85,11 @@ $geolocationButton.addEventListener('click', (e)=>{
         })
     })
 
+})
+
+socket.emit('join', {username, room}, (error)=>{
+    if(error){
+        alert(error)
+        location.href="/"
+    }
 })
